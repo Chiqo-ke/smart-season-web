@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useRef, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -51,7 +52,7 @@ function Dashboard() {
     queryKey: ["dashboard"],
     queryFn: () => dashboardApi.summary(),
   });
-  const { data: fieldsPage, isLoading: loadingFields } = useQuery({
+  const { data: fieldsPageResult, isLoading: loadingFields } = useQuery({
     queryKey: ["fields"],
     queryFn: () => fieldsApi.list(),
   });
@@ -60,8 +61,9 @@ function Dashboard() {
   const stages = summary?.stage_breakdown;
   const total = summary?.total_fields ?? 0;
   const recentUpdates = summary?.recent_updates ?? [];
-  const fields = fieldsPage?.results ?? [];
+  const fields = fieldsPageResult?.results ?? [];
   const firstName = user ? (user.first_name || user.email.split("@")[0]) : "there";
+  const [hasUnreadUpdates, setHasUnreadUpdates] = useState(true);
 
   return (
     <Layout
@@ -167,15 +169,24 @@ function Dashboard() {
         <Card className="p-6 border-border/60">
           <div className="flex items-center justify-between mb-5">
             <h3 className="font-display font-semibold tracking-tight">Recent Updates</h3>
-            <Link to="/updates" className="text-xs text-primary hover:underline">View all</Link>
+            <Link 
+              to="/updates" 
+              className="relative text-xs text-primary hover:underline"
+              onClick={() => setHasUnreadUpdates(false)}
+            >
+              View all
+              {recentUpdates.length > 3 && hasUnreadUpdates && (
+                <span className="absolute -top-1 -right-2 size-2 rounded-full bg-warning shadow-[0_0_8px_hsl(var(--warning))]" />
+              )}
+            </Link>
           </div>
           {isLoading ? (
-            <div className="space-y-4">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
+            <div className="space-y-4">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
           ) : recentUpdates.length === 0 ? (
             <p className="text-sm text-muted-foreground">No updates yet.</p>
           ) : (
             <div className="space-y-4">
-              {recentUpdates.slice(0, 5).map((u) => (
+              {recentUpdates.slice(0, 3).map((u) => (
                 <div key={u.id} className="flex gap-3 pb-4 border-b border-border last:border-0 last:pb-0">
                   <div className="size-8 shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold">
                     {u.agent.first_name[0]}{u.agent.last_name[0]}

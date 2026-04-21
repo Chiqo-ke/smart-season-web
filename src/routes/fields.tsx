@@ -259,12 +259,30 @@ function FieldsPage() {
                 {/* Stage progression bar */}
                 <div className="mb-4">
                   <div className="flex items-center gap-1">
-                    {stages.map((s, i) => (
+                    {stages.map((s, i) => {
+                      // Define stage colors
+                      const stageColors: Record<string, string> = {
+                        planted: "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]",
+                        growing: "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]",
+                        ready: "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]",
+                        harvested: "bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.8)]",
+                      };
+                      const textColors: Record<string, string> = {
+                        planted: "text-blue-500 drop-shadow-[0_0_5px_rgba(59,130,246,0.8)]",
+                        growing: "text-emerald-500 drop-shadow-[0_0_5px_rgba(16,185,129,0.8)]",
+                        ready: "text-amber-500 drop-shadow-[0_0_5px_rgba(245,158,11,0.8)]",
+                        harvested: "text-purple-500 drop-shadow-[0_0_5px_rgba(168,85,247,0.8)]",
+                      };
+                      
+                      const isCurrent = i === idx;
+                      const isPast = i < idx;
+                      
+                      return (
                       <div key={s} className="flex-1">
-                        <div className={`h-1.5 rounded-full ${i <= idx ? "bg-primary" : "bg-muted"}`} />
-                        <div className={`text-[9px] uppercase tracking-wider mt-1.5 text-center ${i === idx ? "text-primary font-semibold" : "text-muted-foreground"}`}>{s}</div>
+                        <div className={`h-1.5 rounded-full ${isPast ? "bg-primary" : isCurrent ? stageColors[s] : "bg-muted"}`} />
+                        <div className={`text-[9px] uppercase tracking-wider mt-1.5 text-center ${isCurrent ? textColors[s] + " font-semibold" : "text-muted-foreground"}`}>{s}</div>
                       </div>
-                    ))}
+                    )})}
                   </div>
                 </div>
 
