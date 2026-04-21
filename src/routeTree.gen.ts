@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UpdatesRouteImport } from './routes/updates'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as FieldsRouteImport } from './routes/fields'
 import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as IndexRouteImport } from './routes/index'
@@ -17,6 +18,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const UpdatesRoute = UpdatesRouteImport.update({
   id: '/updates',
   path: '/updates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FieldsRoute = FieldsRouteImport.update({
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
   '/fields': typeof FieldsRoute
+  '/login': typeof LoginRoute
   '/updates': typeof UpdatesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
   '/fields': typeof FieldsRoute
+  '/login': typeof LoginRoute
   '/updates': typeof UpdatesRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,22 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
   '/fields': typeof FieldsRoute
+  '/login': typeof LoginRoute
   '/updates': typeof UpdatesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/agents' | '/fields' | '/updates'
+  fullPaths: '/' | '/agents' | '/fields' | '/login' | '/updates'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/agents' | '/fields' | '/updates'
-  id: '__root__' | '/' | '/agents' | '/fields' | '/updates'
+  to: '/' | '/agents' | '/fields' | '/login' | '/updates'
+  id: '__root__' | '/' | '/agents' | '/fields' | '/login' | '/updates'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgentsRoute: typeof AgentsRoute
   FieldsRoute: typeof FieldsRoute
+  LoginRoute: typeof LoginRoute
   UpdatesRoute: typeof UpdatesRoute
 }
 
@@ -76,6 +86,13 @@ declare module '@tanstack/react-router' {
       path: '/updates'
       fullPath: '/updates'
       preLoaderRoute: typeof UpdatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/fields': {
@@ -106,6 +123,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgentsRoute: AgentsRoute,
   FieldsRoute: FieldsRoute,
+  LoginRoute: LoginRoute,
   UpdatesRoute: UpdatesRoute,
 }
 export const routeTree = rootRouteImport
