@@ -36,10 +36,10 @@ export function Layout({ title, subtitle, actions, children }: { title: string; 
   if (!user) return null;
 
   return (
-    <div className="min-h-screen flex w-full bg-background relative overflow-x-hidden">
-      <div className="flex-1 flex flex-col min-w-0">
+    <div className="min-h-screen flex w-full bg-background relative overflow-x-hidden transition-all">
+      <div className="flex-1 flex flex-col min-w-0 pb-20 md:pb-0">
         <AppHeader title={title} subtitle={subtitle} actions={actions} />
-        <main className="flex-1 p-6 lg:p-8 pb-32 lg:pb-32">{children}</main>
+        <main className="flex-1 p-4 md:p-6 lg:p-8 pb-28 md:pb-32 lg:pb-32 max-w-full overflow-x-hidden">{children}</main>
       </div>
       <FloatingNav />
     </div>

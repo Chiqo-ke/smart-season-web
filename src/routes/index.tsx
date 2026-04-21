@@ -31,15 +31,15 @@ function ProgressFill({ pct, className }: { pct: number; className: string }) {
 
 function Stat({ label, value, sub, icon: Icon, accent }: { label: string; value: string | number; sub?: string; icon: React.ElementType; accent?: string }) {
   return (
-    <Card className="p-5 border-border/60 hover:shadow-(--shadow-md) transition-shadow">
+    <Card className="p-4 md:p-5 border-border/60 hover:shadow-(--shadow-md) transition-shadow">
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-[11px] uppercase tracking-widest text-muted-foreground font-medium">{label}</div>
-          <div className="mt-2 text-3xl font-display font-semibold tracking-tight">{value}</div>
-          {sub && <div className="mt-1 text-xs text-muted-foreground">{sub}</div>}
+          <div className="text-[10px] md:text-[11px] uppercase tracking-widest text-muted-foreground font-medium">{label}</div>
+          <div className="mt-1 md:mt-2 text-2xl md:text-3xl font-display font-semibold tracking-tight">{value}</div>
+          {sub && <div className="mt-0.5 md:mt-1 text-[10px] md:text-xs text-muted-foreground">{sub}</div>}
         </div>
-        <div className={`size-10 rounded-lg flex items-center justify-center ${accent ?? "bg-primary/10 text-primary"}`}>
-          <Icon className="size-5" />
+        <div className={`size-8 md:size-10 rounded-lg flex items-center justify-center shrink-0 ${accent ?? "bg-primary/10 text-primary"}`}>
+          <Icon className="size-4 md:size-5" />
         </div>
       </div>
     </Card>
@@ -76,24 +76,24 @@ function Dashboard() {
       }
     >
       {/* Hero strip */}
-      <div className="rounded-xl p-6 lg:p-8 mb-6 text-white relative overflow-hidden [background:var(--gradient-hero)]">
+      <div className="rounded-xl p-5 md:p-6 lg:p-8 mb-4 md:mb-6 text-white relative overflow-hidden [background:var(--gradient-hero)]">
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_20%_20%,white_1px,transparent_1px)] bg-size-[32px_32px]" />
-        <div className="relative flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+        <div className="relative flex flex-col md:flex-row md:items-end md:justify-between py-2 gap-4">
           <div>
-            <div className="text-xs uppercase tracking-widest text-white/70 font-medium mb-2">Season 2026 · Q2</div>
-            <h2 className="text-2xl md:text-3xl font-display font-semibold tracking-tight">Welcome back, {firstName}</h2>
-            <p className="text-white/80 mt-1 text-sm max-w-xl">
+            <div className="text-[10px] md:text-xs uppercase tracking-widest text-white/70 font-medium mb-1 md:mb-2">Season 2026 · Q2</div>
+            <h2 className="text-xl md:text-3xl font-display font-semibold tracking-tight">Welcome back, {firstName}</h2>
+            <p className="text-white/80 mt-1 text-[11px] md:text-sm max-w-xl">
               {summary ? `${summary.fields_updated_today} field${summary.fields_updated_today !== 1 ? "s" : ""} updated today.` : "Loading field activity…"}
             </p>
           </div>
-          <div className="flex gap-6">
+          <div className="flex gap-4 md:gap-6 mt-2 md:mt-0 pt-2 border-t border-white/10 md:border-none md:pt-0">
             <div>
-              <div className="text-3xl font-display font-semibold">{summary?.status_breakdown.active ?? "—"}</div>
-              <div className="text-xs text-white/70 uppercase tracking-wider">Active fields</div>
+              <div className="text-2xl md:text-3xl font-display font-semibold">{summary?.status_breakdown.active ?? "—"}</div>
+              <div className="text-[10px] md:text-xs text-white/70 uppercase tracking-wider">Active fields</div>
             </div>
             <div>
-              <div className="text-3xl font-display font-semibold">{summary?.total_agents ?? "—"}</div>
-              <div className="text-xs text-white/70 uppercase tracking-wider">Agents</div>
+              <div className="text-2xl md:text-3xl font-display font-semibold">{summary?.total_agents ?? "—"}</div>
+              <div className="text-[10px] md:text-xs text-white/70 uppercase tracking-wider">Agents</div>
             </div>
           </div>
         </div>
@@ -148,20 +148,6 @@ function Dashboard() {
                   );
                 })}
               </div>
-              <div className="mt-6 pt-5 border-t border-border grid grid-cols-3 gap-4">
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wider">Active</div>
-                  <div className="mt-1 text-xl font-display font-semibold text-success">{summary?.status_breakdown.active ?? 0}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wider">At Risk</div>
-                  <div className="mt-1 text-xl font-display font-semibold text-warning-foreground">{summary?.status_breakdown.at_risk ?? 0}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wider">Completed</div>
-                  <div className="mt-1 text-xl font-display font-semibold text-muted-foreground">{summary?.status_breakdown.completed ?? 0}</div>
-                </div>
-              </div>
             </>
           )}
         </Card>
@@ -207,48 +193,6 @@ function Dashboard() {
           )}
         </Card>
       </div>
-
-      <Card className="mt-6 border-border/60 overflow-hidden">
-        <div className="p-6 border-b border-border flex items-center justify-between">
-          <div>
-            <h3 className="font-display font-semibold tracking-tight">Field Overview</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">Latest status across your portfolio</p>
-          </div>
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/fields">Manage</Link>
-          </Button>
-        </div>
-        <div className="overflow-x-auto">
-          {loadingFields ? (
-            <div className="p-6 space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)}</div>
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="text-left py-3 px-6 font-medium">Field</th>
-                  <th className="text-left py-3 px-4 font-medium">Crop</th>
-                  <th className="text-left py-3 px-4 font-medium">Stage</th>
-                  <th className="text-left py-3 px-4 font-medium">Status</th>
-                  <th className="text-left py-3 px-4 font-medium">Agent</th>
-                </tr>
-              </thead>
-              <tbody>
-                {fields.slice(0, 6).map((f) => (
-                  <tr key={f.id} className="border-t border-border hover:bg-muted/30 transition-colors">
-                    <td className="py-3 px-6 font-medium">{f.name}</td>
-                    <td className="py-3 px-4 text-muted-foreground">{f.crop_type}</td>
-                    <td className="py-3 px-4"><StageBadge stage={f.stage} /></td>
-                    <td className="py-3 px-4"><StatusBadge status={f.status} /></td>
-                    <td className="py-3 px-4 text-muted-foreground">
-                      {f.assigned_to ? `${f.assigned_to.first_name} ${f.assigned_to.last_name}` : <span className="italic">Unassigned</span>}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </Card>
     </Layout>
   );
 }

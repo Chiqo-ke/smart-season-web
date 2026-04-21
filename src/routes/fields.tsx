@@ -9,6 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { StatusBadge, StageBadge } from "@/components/StatusBadge";
 import { fieldsApi, dashboardApi, type Field, type Stage } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -193,6 +195,12 @@ function FieldsPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
   const [q, setQ] = useState("");
+  
+  // Filter states
+  const [stageFilter, setStageFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("");
+  const [atRiskFilter, setAtRiskFilter] = useState(false);
+
   const [showNewField, setShowNewField] = useState(false);
   const [assignTarget, setAssignTarget] = useState<Field | null>(null);
   const [stageTarget, setStageTarget] = useState<Field | null>(null);
@@ -203,9 +211,14 @@ function FieldsPage() {
   });
 
   const allFields = fieldsPage?.results ?? [];
-  const filtered = allFields.filter(
-    (f) => f.name.toLowerCase().includes(q.toLowerCase()) || f.crop_type.toLowerCase().includes(q.toLowerCase())
-  );
+  const filtered = allFields.filter((f) => {
+    const matchesQuery = f.name.toLowerCase().includes(q.toLowerCase()) || f.crop_type.toLowerCase().includes(q.toLowerCase());
+    const matchesStage = stageFilter === "all" || f.stage === stageFilter;
+    const matchesRisk = !atRiskFilter || f.status === "at_risk";
+    const matchesDate = !dateFilter || f.planting_date.startsWith(dateFilter);
+    
+    return matchesQuery && matchesStage && matchesRisk && matchesDate;
+  });
 
   return (
     <Layout
@@ -224,7 +237,42 @@ function FieldsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input placeholder="Search by name or crop..." value={q} onChange={(e) => setQ(e.target.value)} className="pl-9 bg-card" />
         </div>
-        <Button variant="outline"><Filter className="size-4 mr-2" />Filters</Button>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline"><Filter className="size-4 mr-2" />Filters</Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80" align="end">
+            <div className="space-y-4">
+              <h4 className="font-medium text-sm">Filter Fields</h4>
+              <div className="space-y-2">
+                <Label>Farm Stage</Label>
+                <Select value={stageFilter} onValueChange={setStageFilter}>
+                  <SelectTrigger><SelectValue placeholder="All Stages" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Stages</SelectItem>
+                    <SelectItem value="planted">Planted</SelectItem>
+                    <SelectItem value="growing">Growing</SelectItem>
+                    <SelectItem value="ready">Ready</SelectItem>
+                    <SelectItem value="harvested">Harvested</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Date Planted</Label>
+                <Input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="at-risk" checked={atRiskFilter} onCheckedChange={(c) => setAtRiskFilter(!!c)} />
+                <Label htmlFor="at-risk" className="text-sm font-normal">Show only "At Risk" fields</Label>
+              </div>
+              <Button variant="ghost" size="sm" className="w-full mt-2" onClick={() => {
+                setStageFilter("all");
+                setDateFilter("");
+                setAtRiskFilter(false);
+              }}>Clear Filters</Button>
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {isLoading ? (
