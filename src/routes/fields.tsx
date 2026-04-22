@@ -12,9 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { StatusBadge, StageBadge } from "@/components/StatusBadge";
-import { fieldsApi, dashboardApi, type Field, type Stage } from "@/lib/api";
+import { fieldsApi, dashboardApi, type Field, type Stage, type ReportRating } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { Plus, Filter, Search, Calendar, ArrowRight } from "lucide-react";
+import { Plus, Filter, Search, Calendar, ArrowRight, ClipboardList } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -190,6 +190,76 @@ function UpdateStageDialog({ field, onClose }: { field: Field; onClose: () => vo
   );
 }
 
+// ─── Submit Report Dialog ─────────────────────────────────────────────────────
+const reportSchema = z.object({
+  rating: z.enum(["good", "needs_attention", "critical"], { required_error: "Rating is required" }),
+  notes: z.string().optional().default(""),
+});
+type ReportValues = z.infer<typeof reportSchema>;
+
+function SubmitReportDialog({ field, onClose }: { field: Field; onClose: () => void }) {
+  const qc = useQueryClient();
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<ReportValues>({
+    resolver: zodResolver(reportSchema),
+    defaultValues: { notes: "" },
+  });
+  const rating = watch("rating");
+  const mutation = useMutation({
+    mutationFn: (data: ReportValues) =>
+      fieldsApi.submitReport(field.id, { rating: data.rating as ReportRating, notes: data.notes }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["fields"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      toast.success("Report submitted");
+      onClose();
+    },
+    onError: () => toast.error("Failed to submit report"),
+  });
+
+  return (
+    <Dialog open onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Field Report — {field.name}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-4 mt-2">
+          <div className="space-y-1.5">
+            <Label>Condition Rating</Label>
+            <Select value={rating} onValueChange={(v) => setValue("rating", v as ReportRating)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a rating…" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="good">Good — Progressing well</SelectItem>
+                <SelectItem value="needs_attention">Needs Attention — Some concerns</SelectItem>
+                <SelectItem value="critical">Critical — Immediate action required</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.rating && <p className="text-xs text-destructive">{errors.rating.message}</p>}
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="report-notes">
+              Notes <span className="text-muted-foreground font-normal">(optional)</span>
+            </Label>
+            <Textarea
+              id="report-notes"
+              {...register("notes")}
+              placeholder="Any observations or concerns about this field…"
+              rows={3}
+            />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="submit" disabled={mutation.isPending || !rating}>
+              {mutation.isPending ? "Submitting…" : "Submit Report"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // â”€â”€ Fields Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function FieldsPage() {
   const { user } = useAuth();
@@ -204,6 +274,7 @@ function FieldsPage() {
   const [showNewField, setShowNewField] = useState(false);
   const [assignTarget, setAssignTarget] = useState<Field | null>(null);
   const [stageTarget, setStageTarget] = useState<Field | null>(null);
+  const [reportTarget, setReportTarget] = useState<Field | null>(null);
 
   const { data: fieldsPage, isLoading } = useQuery({
     queryKey: ["fields"],
@@ -356,6 +427,17 @@ function FieldsPage() {
                         Assign
                       </Button>
                     )}
+                    {f.assigned_to !== null && (
+                      <Button
+                        variant={f.status === "at_risk" ? "destructive" : "outline"}
+                        size="sm"
+                        className="text-xs"
+                        onClick={() => setReportTarget(f)}
+                      >
+                        <ClipboardList className="size-3 mr-1" />
+                        Report
+                      </Button>
+                    )}
                     {canAdvance && (
                       <Button variant="ghost" size="sm" className="text-primary text-xs" onClick={() => setStageTarget(f)}>
                         Advance <ArrowRight className="size-3 ml-1" />
@@ -372,6 +454,7 @@ function FieldsPage() {
       {showNewField && <NewFieldDialog open={showNewField} onClose={() => setShowNewField(false)} />}
       {assignTarget && <AssignAgentDialog field={assignTarget} onClose={() => setAssignTarget(null)} />}
       {stageTarget && <UpdateStageDialog field={stageTarget} onClose={() => setStageTarget(null)} />}
+      {reportTarget && <SubmitReportDialog field={reportTarget} onClose={() => setReportTarget(null)} />}
     </Layout>
   );
 }

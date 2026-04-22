@@ -57,6 +57,7 @@ function Dashboard() {
     queryFn: () => fieldsApi.list(),
   });
 
+  const isAgent = user?.role === "agent";
   const isLoading = loadingSummary || loadingFields;
   const stages = summary?.stage_breakdown;
   const total = summary?.total_fields ?? 0;
@@ -91,31 +92,41 @@ function Dashboard() {
               <div className="text-2xl md:text-3xl font-display font-semibold">{summary?.status_breakdown.active ?? "—"}</div>
               <div className="text-[10px] md:text-xs text-white/70 uppercase tracking-wider">Active fields</div>
             </div>
-            <div>
-              <div className="text-2xl md:text-3xl font-display font-semibold">{summary?.total_agents ?? "—"}</div>
-              <div className="text-[10px] md:text-xs text-white/70 uppercase tracking-wider">Agents</div>
-            </div>
+            {!isAgent && (
+              <div>
+                <div className="text-2xl md:text-3xl font-display font-semibold">{summary?.total_agents ?? "—"}</div>
+                <div className="text-[10px] md:text-xs text-white/70 uppercase tracking-wider">Agents</div>
+              </div>
+            )}
+            {isAgent && (
+              <div>
+                <div className="text-2xl md:text-3xl font-display font-semibold">{summary?.status_breakdown.at_risk ?? "—"}</div>
+                <div className="text-[10px] md:text-xs text-white/70 uppercase tracking-wider">At Risk</div>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i} className="p-5 border-border/60"><Skeleton className="h-16 w-full" /></Card>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Stat label="Total Fields" value={summary?.total_fields ?? 0} sub={`${summary?.unassigned_fields ?? 0} unassigned`} icon={Sprout} accent="bg-primary/10 text-primary" />
-          <Stat label="Field Agents" value={summary?.total_agents ?? 0} sub="All active" icon={Users} accent="bg-info/10 text-info" />
-          <Stat label="At Risk" value={summary?.status_breakdown.at_risk ?? 0} sub="Needs attention" icon={AlertTriangle} accent="bg-warning/15 text-warning-foreground" />
-          <Stat label="Completed" value={summary?.status_breakdown.completed ?? 0} sub="This season" icon={CheckCircle2} accent="bg-success/10 text-success" />
-        </div>
+      {!isAgent && (
+        isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i} className="p-5 border-border/60"><Skeleton className="h-16 w-full" /></Card>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <Stat label="Total Fields" value={summary?.total_fields ?? 0} sub={`${summary?.unassigned_fields ?? 0} unassigned`} icon={Sprout} accent="bg-primary/10 text-primary" />
+            <Stat label="Field Agents" value={summary?.total_agents ?? 0} sub="All active" icon={Users} accent="bg-info/10 text-info" />
+            <Stat label="At Risk" value={summary?.status_breakdown.at_risk ?? 0} sub="Needs attention" icon={AlertTriangle} accent="bg-warning/15 text-warning-foreground" />
+            <Stat label="Completed" value={summary?.status_breakdown.completed ?? 0} sub="This season" icon={CheckCircle2} accent="bg-success/10 text-success" />
+          </div>
+        )
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="p-6 lg:col-span-2 border-border/60">
+      <div className={`grid grid-cols-1 gap-6 ${isAgent ? "" : "lg:grid-cols-3"}`}>
+        <Card className={`p-6 border-border/60 ${isAgent ? "" : "lg:col-span-2"}`}>
           <div className="flex items-center justify-between mb-5">
             <div>
               <h3 className="font-display font-semibold tracking-tight">Crop Stage Distribution</h3>
@@ -152,7 +163,7 @@ function Dashboard() {
           )}
         </Card>
 
-        <Card className="p-6 border-border/60">
+        {!isAgent && <Card className="p-6 border-border/60">
           <div className="flex items-center justify-between mb-5">
             <h3 className="font-display font-semibold tracking-tight">Recent Updates</h3>
             <Link 
@@ -191,7 +202,7 @@ function Dashboard() {
               ))}
             </div>
           )}
-        </Card>
+        </Card>}
       </div>
     </Layout>
   );

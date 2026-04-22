@@ -25,6 +25,18 @@ export interface Field {
   created_by: User;
   created_at: string;
   updated_at: string;
+  last_report_at: string | null;
+}
+
+export type ReportRating = "good" | "needs_attention" | "critical";
+
+export interface FieldReport {
+  id: number;
+  field_id: number;
+  agent: User;
+  rating: ReportRating;
+  notes: string;
+  created_at: string;
 }
 
 export interface FieldUpdate {
@@ -196,6 +208,8 @@ export const fieldsApi = {
     apiPost<Field>(`/api/v1/fields/${id}/assign/`, { agent_id }),
   updateStage: (id: number, stage: Stage, notes: string) =>
     apiPost<FieldUpdate>(`/api/v1/fields/${id}/update-stage/`, { stage, notes }),
+  submitReport: (id: number, data: { rating: ReportRating; notes?: string }) =>
+    apiPost<FieldReport>(`/api/v1/fields/${id}/submit-report/`, data),
 };
 
 export const updatesApi = {
