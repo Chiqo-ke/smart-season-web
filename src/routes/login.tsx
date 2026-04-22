@@ -138,9 +138,12 @@ function LoginPage() {
           </form>
         </Card>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          Demo — admin@smartseason.com / Agent@1234
-        </p>
+        <div className="mt-6 text-center text-xs text-muted-foreground space-y-1">
+          <p className="font-medium">Demo accounts (seed_demo required)</p>
+          <p>admin@smartseason.com — Admin@1234</p>
+          <p>agent1@smartseason.com — Agent@1234</p>
+          <p>agent2@smartseason.com — Agent@1234</p>
+        </div>
       </div>
     </div>
   );
